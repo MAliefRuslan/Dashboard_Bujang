@@ -7,9 +7,9 @@ let visitBillChartInstance = null;
 let paymentChartInstance = null;
 
 // Chart.js default config
-Chart.defaults.color = '#94a3b8';
+Chart.defaults.color = '#64748b';
 Chart.defaults.font.family = "'Outfit', sans-serif";
-Chart.defaults.scale.grid.color = 'rgba(255, 255, 255, 0.05)';
+Chart.defaults.scale.grid.color = 'rgba(0, 0, 0, 0.06)';
 
 document.addEventListener('DOMContentLoaded', async () => {
     try {
