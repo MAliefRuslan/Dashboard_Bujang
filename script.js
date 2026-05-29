@@ -78,7 +78,15 @@ function updateDashboard() {
     document.getElementById('totalTransactions').textContent = new Intl.NumberFormat('id-ID').format(filteredData.length);
     
     const uniqueBills = new Set(filteredData.map(d => d.SalesNumber).filter(b => b));
-    document.getElementById('totalBills').textContent = new Intl.NumberFormat('id-ID').format(uniqueBills.size);
+    const billCount = uniqueBills.size;
+    document.getElementById('totalBills').textContent = new Intl.NumberFormat('id-ID').format(billCount);
+    
+    const avgPerBill = billCount > 0 ? (totalSales / billCount) : 0;
+    document.getElementById('avgPerBill').textContent = new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        maximumFractionDigits: 0
+    }).format(avgPerBill);
     
     // Update Charts
     updateHourChart(filteredData);
