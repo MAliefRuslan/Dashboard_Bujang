@@ -77,6 +77,9 @@ function updateDashboard() {
     
     document.getElementById('totalTransactions').textContent = new Intl.NumberFormat('id-ID').format(filteredData.length);
     
+    const uniqueBills = new Set(filteredData.map(d => d.SalesNumber).filter(b => b));
+    document.getElementById('totalBills').textContent = new Intl.NumberFormat('id-ID').format(uniqueBills.size);
+    
     // Update Charts
     updateHourChart(filteredData);
     updateDayChart(filteredData);
