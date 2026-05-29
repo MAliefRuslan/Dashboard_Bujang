@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Penjualan</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar / Header -->
+        <header class="dashboard-header glass-effect">
+            <div class="logo-container">
+                <img src="logo.jpeg" alt="Logo" class="logo">
+                <h1>Sales Dashboard</h1>
+            </div>
+            
+            <div class="filters-container">
+                <div class="filter-group">
+                    <label for="yearFilter">Tahun:</label>
+                    <select id="yearFilter" class="glass-select">
+                        <option value="all">Semua Tahun</option>
+                        <!-- Options populated via JS -->
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="monthFilter">Bulan:</label>
+                    <select id="monthFilter" class="glass-select">
+                        <option value="all">Semua Bulan</option>
+                        <!-- Options populated via JS -->
+                    </select>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="dashboard-content">
+            <!-- Visit Bill Cards (Moved to top) -->
+            <div class="chart-container glass-effect">
+                <h2 style="margin-bottom: 15px;">Jenis Transaksi (Total Bill)</h2>
+                <div id="visitBillCards" class="visit-cards-container">
+                    <!-- Cards will be injected here via JS -->
+                </div>
+            </div>
+
+            <!-- Stats overview -->
+            <div class="stats-row">
+                <div class="stat-card glass-effect">
+                    <h3>Total Penjualan</h3>
+                    <p id="totalSales">Rp 0</p>
+                </div>
+                <div class="stat-card glass-effect">
+                    <h3>Total Transaksi</h3>
+                    <p id="totalTransactions">0</p>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="charts-row">
+                <div class="chart-container glass-effect">
+                    <h2>Penjualan Berdasarkan Jam</h2>
+                    <div class="canvas-wrapper">
+                        <canvas id="hourChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container glass-effect">
+                    <h2>Penjualan Berdasarkan Tanggal (Hari)</h2>
+                    <div class="canvas-wrapper">
+                        <canvas id="dayChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- New Charts Row -->
+            <div class="charts-row three-cols">
+                <div class="chart-container glass-effect">
+                    <h2>Top 10 Menu</h2>
+                    <div class="canvas-wrapper">
+                        <canvas id="menuChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container glass-effect">
+                    <h2>Jenis Transaksi (Total Rp)</h2>
+                    <div class="canvas-wrapper">
+                        <canvas id="visitChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-container glass-effect">
+                    <h2>Metode Pembayaran</h2>
+                    <div class="canvas-wrapper">
+                        <canvas id="paymentChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
