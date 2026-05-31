@@ -5,6 +5,7 @@ let menuChartInstance = null;
 let visitChartInstance = null;
 let visitBillChartInstance = null;
 let paymentChartInstance = null;
+let monthCompareChartInstance = null;
 
 // Chart.js default config
 Chart.defaults.color = '#64748b';
@@ -95,6 +96,7 @@ function updateDashboard() {
     updateVisitChart(filteredData);
     updateVisitBillChart(filteredData);
     updatePaymentChart(filteredData);
+    updateMonthCompareChart();
 }
 
 function updateHourChart(data) {
@@ -449,4 +451,96 @@ function updateVisitBillChart(data) {
         
         container.appendChild(card);
     });
+}
+
+function updateMonthCompareChart() {
+    const monthOrder = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const monthLabels = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'];
+
+    // Always use ALL data (ignoring filters) so we can compare across years
+    const years = [...new Set(rawData.map(d => d.year).filter(y => y))].sort();
+
+    const yearColors = [
+        { bg: 'rgba(59, 130, 246, 0.15)', border: 'rgb(59, 130, 246)' },
+        { bg: 'rgba(16, 185, 129, 0.15)', border: 'rgb(16, 185, 129)' },
+        { bg: 'rgba(245, 158, 11, 0.15)', border: 'rgb(245, 158, 11)' },
+        { bg: 'rgba(236, 72, 153, 0.15)', border: 'rgb(236, 72, 153)' },
+        { bg: 'rgba(139, 92, 246, 0.15)', border: 'rgb(139, 92, 246)' }
+    ];
+
+    const datasets = years.map((year, idx) => {
+        const yearData = rawData.filter(d => String(d.year) === String(year));
+        const monthTotals = monthOrder.map(month => {
+            return yearData
+                .filter(d => String(d.Month) === month)
+                .reduce((sum, d) => sum + (Number(d.Total) || 0), 0);
+        });
+        const color = yearColors[idx % yearColors.length];
+        return {
+            label: String(year),
+            data: monthTotals,
+            backgroundColor: color.bg,
+            borderColor: color.border,
+            borderWidth: 2.5,
+            tension: 0.35,
+            fill: true,
+            pointBackgroundColor: color.border,
+            pointRadius: 5,
+            pointHoverRadius: 8
+        };
+    });
+
+    const ctx = document.getElementById('monthCompareChart').getContext('2d');
+
+    if (monthCompareChartInstance) {
+        monthCompareChartInstance.data.datasets = datasets;
+        monthCompareChartInstance.update();
+    } else {
+        monthCompareChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: monthLabels,
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            pointStyle: 'circle',
+                            padding: 20,
+                            font: { size: 13, weight: '600' }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(context.raw);
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                if (value >= 1000000000) return (value / 1000000000).toFixed(1) + 'B';
+                                if (value >= 1000000) return (value / 1000000).toFixed(0) + 'M';
+                                if (value >= 1000) return (value / 1000).toFixed(0) + 'K';
+                                return value;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
 }
