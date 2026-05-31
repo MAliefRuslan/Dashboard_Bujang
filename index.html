@@ -71,9 +71,28 @@
 
             <!-- Monthly Comparison -->
             <div class="chart-container glass-effect">
-                <h2>Komparasi Penjualan per Bulan</h2>
+                <h2>Komparasi Penjualan per Bulan (Antar Tahun)</h2>
                 <div class="canvas-wrapper" style="height: 400px;">
                     <canvas id="monthCompareChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Two Months Daily Comparison -->
+            <div class="chart-container glass-effect">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 20px; gap: 15px;">
+                    <h2>Komparasi Harian (Bulan vs Bulan)</h2>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <select id="compMonth1" class="glass-select" style="padding: 5px 10px;">
+                            <option value="April">April</option>
+                        </select>
+                        <span style="color: var(--text-secondary); font-weight: 600;">VS</span>
+                        <select id="compMonth2" class="glass-select" style="padding: 5px 10px;">
+                            <option value="May">May</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="canvas-wrapper" style="height: 400px;">
+                    <canvas id="twoMonthCompareChart"></canvas>
                 </div>
             </div>
 

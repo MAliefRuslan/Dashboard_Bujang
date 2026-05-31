@@ -6,6 +6,7 @@ let visitChartInstance = null;
 let visitBillChartInstance = null;
 let paymentChartInstance = null;
 let monthCompareChartInstance = null;
+let twoMonthCompareChartInstance = null;
 
 // Chart.js default config
 Chart.defaults.color = '#64748b';
@@ -23,6 +24,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Add event listeners
         document.getElementById('yearFilter').addEventListener('change', updateDashboard);
         document.getElementById('monthFilter').addEventListener('change', updateDashboard);
+        
+        document.getElementById('compMonth1').addEventListener('change', updateTwoMonthCompareChart);
+        document.getElementById('compMonth2').addEventListener('change', updateTwoMonthCompareChart);
         
         // Initial render
         updateDashboard();
@@ -47,12 +51,27 @@ function populateFilters() {
     });
 
     const monthSelect = document.getElementById('monthFilter');
+    const compMonth1Select = document.getElementById('compMonth1');
+    const compMonth2Select = document.getElementById('compMonth2');
+    
+    // Clear existing hardcoded options
+    compMonth1Select.innerHTML = '';
+    compMonth2Select.innerHTML = '';
+
     months.forEach(month => {
         const option = document.createElement('option');
         option.value = month;
         option.textContent = month;
         monthSelect.appendChild(option);
+        
+        const option1 = option.cloneNode(true);
+        const option2 = option.cloneNode(true);
+        compMonth1Select.appendChild(option1);
+        compMonth2Select.appendChild(option2);
     });
+
+    if (months.length > 0) compMonth1Select.value = months[0];
+    if (months.length > 1) compMonth2Select.value = months[1];
 }
 
 function updateDashboard() {
@@ -97,6 +116,7 @@ function updateDashboard() {
     updateVisitBillChart(filteredData);
     updatePaymentChart(filteredData);
     updateMonthCompareChart();
+    updateTwoMonthCompareChart();
 }
 
 function updateHourChart(data) {
@@ -528,6 +548,112 @@ function updateMonthCompareChart() {
                     }
                 },
                 scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                if (value >= 1000000000) return (value / 1000000000).toFixed(1) + 'B';
+                                if (value >= 1000000) return (value / 1000000).toFixed(0) + 'M';
+                                if (value >= 1000) return (value / 1000).toFixed(0) + 'K';
+                                return value;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+}
+
+function updateTwoMonthCompareChart() {
+    const selectedYear = document.getElementById('yearFilter').value;
+    const m1 = document.getElementById('compMonth1').value;
+    const m2 = document.getElementById('compMonth2').value;
+
+    let baseData = rawData;
+    if (selectedYear !== 'all') {
+        baseData = baseData.filter(d => String(d.year) === selectedYear);
+    }
+
+    const days = Array.from({length: 31}, (_, i) => String(i + 1));
+
+    const m1Data = days.map(day => {
+        return baseData
+            .filter(d => String(d.Month) === m1 && String(d.Day) === day)
+            .reduce((sum, d) => sum + (Number(d.Total) || 0), 0);
+    });
+
+    const m2Data = days.map(day => {
+        return baseData
+            .filter(d => String(d.Month) === m2 && String(d.Day) === day)
+            .reduce((sum, d) => sum + (Number(d.Total) || 0), 0);
+    });
+
+    const ctx = document.getElementById('twoMonthCompareChart').getContext('2d');
+
+    const datasets = [
+        {
+            label: m1 || 'Bulan 1',
+            data: m1Data,
+            borderColor: 'rgb(236, 72, 153)',
+            backgroundColor: 'rgba(236, 72, 153, 0.15)',
+            borderWidth: 2,
+            tension: 0.3,
+            fill: true,
+            pointBackgroundColor: 'rgb(236, 72, 153)',
+            pointRadius: 4
+        },
+        {
+            label: m2 || 'Bulan 2',
+            data: m2Data,
+            borderColor: 'rgb(59, 130, 246)',
+            backgroundColor: 'rgba(59, 130, 246, 0.15)',
+            borderWidth: 2,
+            tension: 0.3,
+            fill: true,
+            pointBackgroundColor: 'rgb(59, 130, 246)',
+            pointRadius: 4
+        }
+    ];
+
+    if (twoMonthCompareChartInstance) {
+        twoMonthCompareChartInstance.data.datasets = datasets;
+        twoMonthCompareChartInstance.update();
+    } else {
+        twoMonthCompareChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: days,
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20,
+                            font: { size: 13, weight: '600' }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(context.raw);
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: { display: true, text: 'Tanggal (Hari ke-)' }
+                    },
                     y: {
                         beginAtZero: true,
                         ticks: {
