@@ -698,8 +698,8 @@ function updateBomForecasting(filteredData) {
             const takaran = Number(bom.Takaran) || 0;
             const satuan = bom.Satuan ? bom.Satuan.trim() : '';
 
-            // Unique key by bahan name and unit (satuan)
-            const key = `${bahanName}|${satuan}`;
+            // Group by bahan name only (merge different units)
+            const key = bahanName;
 
             if (!bahanUsage[key]) {
                 bahanUsage[key] = {
@@ -707,6 +707,10 @@ function updateBomForecasting(filteredData) {
                     total: 0,
                     satuan: satuan
                 };
+            }
+            // If a different unit appears, combine them
+            if (satuan && !bahanUsage[key].satuan.includes(satuan)) {
+                bahanUsage[key].satuan += ' / ' + satuan;
             }
             bahanUsage[key].total += (takaran * soldQty);
         }
