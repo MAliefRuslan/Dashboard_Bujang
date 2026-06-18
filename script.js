@@ -716,7 +716,7 @@ function updateBomForecasting(filteredData) {
     const tbody = document.getElementById('bomTableBody');
     tbody.innerHTML = '';
 
-    const bahanArray = Object.values(bahanUsage).sort((a, b) => b.total - a.total);
+    const bahanArray = Object.values(bahanUsage).sort((a, b) => a.nama.localeCompare(b.nama));
 
     if (bahanArray.length === 0) {
         tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Tidak ada data bahan baku untuk periode ini.</td></tr>';
