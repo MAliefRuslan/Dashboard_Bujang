@@ -1,4 +1,5 @@
 let rawData = [];
+let rawBomData = [];
 let hourChartInstance = null;
 let dayChartInstance = null;
 let menuChartInstance = null;
@@ -17,6 +18,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         const response = await fetch('data.json');
         rawData = await response.json();
+        
+        const responseBom = await fetch('bom.json');
+        rawBomData = await responseBom.json();
         
         // Populate filters
         populateFilters();
@@ -117,6 +121,7 @@ function updateDashboard() {
     updatePaymentChart(filteredData);
     updateMonthCompareChart();
     updateTwoMonthCompareChart();
+    updateBomForecasting(filteredData);
 }
 
 function updateHourChart(data) {
@@ -670,3 +675,73 @@ function updateTwoMonthCompareChart() {
         });
     }
 }
+
+function updateBomForecasting(filteredData) {
+    // 1. Hitung total kuantitas per menu dari data penjualan
+    const menuSales = {};
+    filteredData.forEach(d => {
+        if (!d.Menu) return;
+        const menuName = d.Menu.trim();
+        menuSales[menuName] = (menuSales[menuName] || 0) + 1;
+    });
+
+    // 2. Kalkulasi penggunaan bahan berdasarkan BOM
+    const bahanUsage = {};
+
+    rawBomData.forEach(bom => {
+        if (!bom.Menu || !bom.Bahan) return;
+        const menuName = bom.Menu.trim();
+        const soldQty = menuSales[menuName] || 0;
+        
+        if (soldQty > 0) {
+            const bahanName = bom.Bahan.trim();
+            const takaran = Number(bom.Takaran) || 0;
+            const satuan = bom.Satuan ? bom.Satuan.trim() : '';
+
+            // Unique key by bahan name and unit (satuan)
+            const key = `${bahanName}|${satuan}`;
+
+            if (!bahanUsage[key]) {
+                bahanUsage[key] = {
+                    nama: bahanName,
+                    total: 0,
+                    satuan: satuan
+                };
+            }
+            bahanUsage[key].total += (takaran * soldQty);
+        }
+    });
+
+    // 3. Render ke tabel
+    const tbody = document.getElementById('bomTableBody');
+    tbody.innerHTML = '';
+
+    const bahanArray = Object.values(bahanUsage).sort((a, b) => b.total - a.total);
+
+    if (bahanArray.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Tidak ada data bahan baku untuk periode ini.</td></tr>';
+        return;
+    }
+
+    bahanArray.forEach(b => {
+        const tr = document.createElement('tr');
+        
+        const tdNama = document.createElement('td');
+        tdNama.textContent = b.nama;
+        
+        const tdTotal = document.createElement('td');
+        tdTotal.style.textAlign = 'right';
+        // Format number nicely
+        tdTotal.textContent = new Intl.NumberFormat('id-ID').format(b.total);
+        
+        const tdSatuan = document.createElement('td');
+        tdSatuan.textContent = b.satuan;
+        
+        tr.appendChild(tdNama);
+        tr.appendChild(tdTotal);
+        tr.appendChild(tdSatuan);
+        
+        tbody.appendChild(tr);
+    });
+}
+
